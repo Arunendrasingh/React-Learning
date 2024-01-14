@@ -15,7 +15,7 @@ export default function App() {
       <Logo />
       <Form setItem={updateItemList} />
       <OrderList itemList={itemList} modifyItemList={setItemList} />
-      <State />
+      <State itemList={itemList} />
     </div>
   );
 }
@@ -124,10 +124,22 @@ function Item({ item, updatePacked, removeItem }) {
 }
 
 // State...
-function State() {
+function State({ itemList }) {
+  if (itemList.length === 0) {
+    return (
+      <footer className="stats">
+        Start Adding items in you item packing list 🚀🚀🧑‍🚀🧑‍🚀
+      </footer>
+    );
+  }
+  // calclulate length, packed-item length and percentage.
+  const itemLength = itemList.length;
+  const packedItemLength = itemList.filter((item) => item.packed).length;
+  const packed_percentage = Math.round((packedItemLength / itemLength) * 100);
   return (
     <footer className="stats">
-      You have xx items in your list, and you already packed xx package.
+      You have {itemLength} items in your list, and you already packed{" "}
+      {packedItemLength} package ({packed_percentage}%).
     </footer>
   );
 }
