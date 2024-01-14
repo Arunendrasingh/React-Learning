@@ -102,18 +102,24 @@ function OrderList({ itemList, modifyItemList }) {
   return (
     <ul className="list">
       {itemList.map((item) => (
-        <li>
-          <input
-            type="checkbox"
-            onChange={() => updatePacked(item.id, !item.packed)}
-          />
-          <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-            {item.description} -- {item.quantity}
-          </span>
-          <button onClick={() => removeItem(item.id)}>☠️</button>
-        </li>
+        <Item item={item} updatePacked={updatePacked} removeItem={removeItem} />
       ))}
     </ul>
+  );
+}
+
+function Item({ item, updatePacked, removeItem }) {
+  return (
+    <li>
+      <input
+        type="checkbox"
+        onChange={() => updatePacked(item.id, !item.packed)}
+      />
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.description} -- {item.quantity}
+      </span>
+      <button onClick={() => removeItem(item.id)}>☠️</button>
+    </li>
   );
 }
 
