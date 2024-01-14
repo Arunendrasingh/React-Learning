@@ -67,6 +67,7 @@ body {
 }
 
 .open .number,
-.open .text {
+.open .text,
+.open .icon {
   color: #087f5b;
 }
