@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 // import { CSSTransFition } from 'react-transition-group';
 
 // Initial data
@@ -36,8 +36,8 @@ function EatNSplit() {
   };
   return (
     <>
-      <h1 style={{ textAlign: "center" }}>Boll Splitter App</h1>
-      <div className="app" style={{padding: "10px"}}>
+      <h1 style={{ textAlign: "center" }}>Bill Splitter App</h1>
+      <div className="app" style={{ padding: "10px" }}>
         <div className="sidebar">
           <FriendList friendList={friendList} />
           {!isForm ? (
@@ -63,8 +63,9 @@ function AddFriendForm({ isForm, toggleForm, addNewFriend }) {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     // saving the obj
-    let new_obj = { id: Date.now(), name: name, image: img, balance: 0 };
+    let new_obj = { id: Date.now(), name, image: img, balance: 0 };
     addNewFriend(new_obj);
+    setName("")
   };
   return (
     <>
@@ -104,7 +105,15 @@ function FriendList({ friendList }) {
           <li>
             <img src={initialFreind.image} alt="Profile pic" />
             <h3>{initialFreind.name}</h3>
-            <p>You/Sarah owe Sarah/you {initialFreind.balance} amount.</p>
+            <p>
+              {initialFreind.balance < 0
+                ? `You owe ${initialFreind.name} ${Math.abs(
+                    initialFreind.balance
+                  )} amount.`
+                : initialFreind.balance === 0
+                ? "Amount is already settled."
+                : `${initialFreind.name} owe you ${initialFreind.balance} amount.`}
+            </p>
             <button className="button">Select</button>
           </li>
         );
