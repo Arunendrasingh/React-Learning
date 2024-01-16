@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+// import { CSSTransFition } from 'react-transition-group';
+
 // Initial data
 const initialFriends = [
   {
@@ -21,24 +24,82 @@ const initialFriends = [
 ];
 
 function EatNSplit() {
+  // Initial-Friend state
+  const [friendList, setFriendList] = useState(initialFriends);
+  const addFriend = (frinedObj) => {
+    setFriendList(() => [...friendList, frinedObj]);
+  };
+  // Add friend Form state
+  const [isForm, setIsForm] = useState(0);
+  const toggleFriendForm = () => {
+    setIsForm(!isForm);
+  };
   return (
     <>
       <h1 style={{ textAlign: "center" }}>Boll Splitter App</h1>
-      <div className="app">
+      <div className="app" style={{padding: "10px"}}>
         <div className="sidebar">
-          <FriendList />
-          {/* On Click open new form to add a new freind. */}
-          <button className="button">Add Freind</button>
+          <FriendList friendList={friendList} />
+          {!isForm ? (
+            <button className="button" onClick={toggleFriendForm}>
+              Add New Friend
+            </button>
+          ) : (
+            <AddFriendForm
+              isForm={isForm}
+              toggleForm={toggleFriendForm}
+              addNewFriend={addFriend}
+            />
+          )}
         </div>
       </div>
     </>
   );
 }
 
-function FriendList() {
+function AddFriendForm({ isForm, toggleForm, addNewFriend }) {
+  const [name, setName] = useState("");
+  const [img, setImg] = useState("https://i.pravatar.cc/");
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    // saving the obj
+    let new_obj = { id: Date.now(), name: name, image: img, balance: 0 };
+    addNewFriend(new_obj);
+  };
+  return (
+    <>
+      {isForm && (
+        <>
+          <form className="form form-add-friend" onSubmit={handleFormSubmit}>
+            <label htmlFor="freind-name">🧑‍🤝‍🧑 Friend Name</label>
+            <input
+              type="text"
+              placeholder="Enter Friend Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <label htmlFor="freind-image">🖼️ Image URL</label>
+            <input
+              type="text"
+              placeholder="Enter Friend Name"
+              value={img}
+              onChange={(e) => setImg(e.target.value)}
+            />
+            <button className="button">Add Freind</button>
+          </form>
+          <button className="button" onClick={toggleForm}>
+            Close
+          </button>
+        </>
+      )}
+    </>
+  );
+}
+
+function FriendList({ friendList }) {
   return (
     <ul>
-      {initialFriends.map((initialFreind) => {
+      {friendList.map((initialFreind) => {
         return (
           <li>
             <img src={initialFreind.image} alt="Profile pic" />
