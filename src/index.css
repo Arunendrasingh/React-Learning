@@ -31,6 +31,8 @@ body {
   grid-template-columns: 34rem 44rem;
   column-gap: 4rem;
   align-items: start;
+  margin: 0px 0px 0px 250px;
+  border: solid red;
 }
 
 .button {
