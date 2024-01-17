@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { CSSTransFition } from 'react-transition-group';
 
 // Initial data
@@ -143,6 +143,8 @@ function SplittBillForm({ selectedFriend, splitBill }) {
     }
   };
 
+  useEffect(() => setForm(splitFormObj), [selectedFriend]);
+
   const autoFillFormExpense = (
     currentFieldName,
     fieldToUpdate,
@@ -177,12 +179,6 @@ function SplittBillForm({ selectedFriend, splitBill }) {
           value={form.total_amount}
           onChange={(e) => {
             setForm({ ...form, total_amount: Number(e.target.value) });
-            // autoFillFormExpense(
-            //   "total_amount",
-            //   "friend_expense",
-            //   "your_expense",
-            //   e.target.value
-            // );
           }}
         />
         <label htmlFor="your-expense">👨‍🦰 Your Expense</label>
@@ -233,28 +229,35 @@ function FriendList({ friendList, handleSelection }) {
     <ul>
       {friendList.map((initialFreind) => {
         return (
-          <li>
-            <img src={initialFreind.image} alt="Profile pic" />
-            <h3>{initialFreind.name}</h3>
-            <p>
-              {initialFreind.balance < 0
-                ? `You owe ${initialFreind.name} ${Math.abs(
-                    initialFreind.balance
-                  )} amount.`
-                : initialFreind.balance === 0
-                ? "Amount is already settled."
-                : `${initialFreind.name} owe you ${initialFreind.balance} amount.`}
-            </p>
-            <button
-              className="button"
-              onClick={() => handleSelection(initialFreind)}
-            >
-              Select
-            </button>
-          </li>
+          <Friend
+            initialFreind={initialFreind}
+            handleSelection={handleSelection}
+            key={initialFreind.id}
+          />
         );
       })}
     </ul>
+  );
+}
+
+function Friend({ initialFreind, handleSelection }) {
+  return (
+    <li>
+      <img src={initialFreind.image} alt="Profile pic" />
+      <h3>{initialFreind.name}</h3>
+      <p>
+        {initialFreind.balance < 0
+          ? `You owe ${initialFreind.name} ${Math.abs(
+              initialFreind.balance
+            )} amount.`
+          : initialFreind.balance === 0
+          ? "Amount is already settled."
+          : `${initialFreind.name} owe you ${initialFreind.balance} amount.`}
+      </p>
+      <button className="button" onClick={() => handleSelection(initialFreind)}>
+        Select
+      </button>
+    </li>
   );
 }
 
