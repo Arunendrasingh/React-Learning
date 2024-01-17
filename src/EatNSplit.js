@@ -51,8 +51,25 @@ function EatNSplit() {
     });
   };
 
-  const splitBill = (bill_detail) => {
-    console.log(bill_detail);
+  const splitBill = (friend_id, bill_detail) => {
+    console.log(friend_id, bill_detail);
+    setFriendList(() =>
+      friendList.map((friend) => {
+        if (friend.id === friend_id) {
+          let final_bill;
+          if (bill_detail.bill_payed_by === friend.name) {
+            final_bill = bill_detail.total_amount - bill_detail.friend_expense;
+            friend.balance = friend.balance + final_bill;
+          } else {
+            final_bill = bill_detail.total_amount - bill_detail.your_expense;
+            friend.balance = friend.balance - final_bill;
+          }
+          // Number(bill_detail.your_expense) -
+          // Number(bill_detail.friend_expense);
+        }
+        return friend;
+      })
+    );
   };
   return (
     <>
@@ -93,7 +110,6 @@ function AddFriendForm({ isForm, toggleForm, addNewFriend }) {
   const [img, setImg] = useState("https://i.pravatar.cc/");
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    // saving the obj
     let new_obj = { id: Date.now(), name, image: img, balance: 0 };
     addNewFriend(new_obj);
     setName("");
@@ -131,6 +147,7 @@ function AddFriendForm({ isForm, toggleForm, addNewFriend }) {
 // Add Expese form
 function SplittBillForm({ selectedFriend, splitBill }) {
   const [form, setForm] = useState(splitFormObj);
+
   const handleSplittBillForm = (e) => {
     e.preventDefault();
     console.log("Submitting the form with value: ", form);
@@ -139,8 +156,12 @@ function SplittBillForm({ selectedFriend, splitBill }) {
       Number(form.total_amount) !==
       Number(form.your_expense) + Number(form.friend_expense)
     ) {
-      console.log("Expense must equal to total amount");
+      alert("Expenses must equal to total amount");
+      return;
     }
+
+    splitBill(selectedFriend.id, form);
+    setForm(splitFormObj);
   };
 
   useEffect(() => setForm(splitFormObj), [selectedFriend]);
@@ -163,10 +184,9 @@ function SplittBillForm({ selectedFriend, splitBill }) {
     }
 
     let calculated_value = total_amount - Number(value);
-
     newFormObj[fieldToUpdate] = Number(calculated_value);
     newFormObj[currentFieldName] = Number(value);
-
+    // Set the state with new form object.
     setForm(newFormObj);
   };
   return (
