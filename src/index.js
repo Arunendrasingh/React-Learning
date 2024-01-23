@@ -1,14 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-// import './eatNsplit.css';
-import RatingStar from "./RatingStar";
+import "./popcorn.css"
+import App from "./Popcorn";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RatingStar />
-    <RatingStar />
-    <RatingStar />
+    <App />
   </React.StrictMode>
 );
 
