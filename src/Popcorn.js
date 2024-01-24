@@ -51,20 +51,21 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
+  const [movies, setMovies] = useState(tempMovieData);
   return (
     <>
-      <Navbar />
-      <Main />
+      <Navbar movies={movies} />
+      <Main movies={movies} />
     </>
   );
 }
 
-function Main() {
+function Main({ movies }) {
   return (
     <>
       <main className="main">
-        <MovieListBox />
-        <MovieWatchListBox />
+        <MovieListBox movies={movies} />
+        <MovieWatchListBox movies={movies} />
       </main>
     </>
   );
@@ -90,8 +91,8 @@ function MovieWatchListBox() {
 function WatchedMovieList({ watched }) {
   return (
     <ul className="list">
-      {watched.map((movie) => (
-        <WatchedMovie movie={movie} />
+      {watched.map((movie, index) => (
+        <WatchedMovie movie={movie} key={index} />
       ))}
     </ul>
   );
@@ -164,23 +165,23 @@ function Movie({ movie }) {
   );
 }
 
-function MovieList() {
-  const [movies, setMovies] = useState(tempMovieData);
+function MovieList({ movies }) {
+  console.log("Movies in MovieList component: ", movies);
   return (
     <ul className="list">
-      {movies?.map((movie) => (
-        <Movie movie={movie} />
+      {movies?.map((movie, index) => (
+        <Movie movie={movie} key={index} />
       ))}
     </ul>
   );
 }
 
-function MovieListBox() {
+function MovieListBox({ movies }) {
   const [isOpen1, setIsOpen1] = useState(true);
   return (
     <div className="box">
       <Button isOpen={isOpen1} setOpenF={setIsOpen1} />
-      {isOpen1 && <MovieList />}
+      {isOpen1 && <MovieList movies={movies} />}
     </div>
   );
 }
@@ -193,12 +194,12 @@ function Button({ isOpen, setOpenF }) {
   );
 }
 
-function Navbar() {
+function Navbar({ movies }) {
   return (
     <nav className="nav-bar">
       <Logo />
       <Search />
-      <NumResult />
+      <NumResult movies={movies} />
     </nav>
   );
 }
@@ -225,10 +226,10 @@ function Search() {
   );
 }
 
-function NumResult() {
+function NumResult({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>X</strong> results
+      Found <strong>{movies.length}</strong> results
     </p>
   );
 }
