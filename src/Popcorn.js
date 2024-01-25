@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
 const tempMovieData = [
   {
@@ -51,17 +53,37 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
+  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
+  const [query, setQuery] = useState("");
+  const [loader, setLoader] = useState(false);
+  // TODO: Add error handler to avoid any error type and display fetch error in useEffect.
+
+  useEffect(() => {
+    async function loadSearchedMovie() {
+      // Here load all searhed movies.
+      setLoader(true);
+      let response = await fetch(`${key_host}s=${query}`);
+      let json_val = await response.json();
+      console.log("Value when no search field is provided: ", json_val);
+      // setting the status of movies with API response.
+      // Apply a condition to set movies only when movies is provided.
+      if (json_val.Search) {
+        setMovies(json_val.Search);
+        console.log("Setting up sarch vlaue", json_val.Response);
+      }
+      setLoader(false);
+    }
+    loadSearchedMovie();
+  }, [query]);
   return (
     <>
       <Navbar>
+        <Search searchString={query} setSearchField={setQuery} />
         <NumResult movies={movies} />
       </Navbar>
       <Main>
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{loader ? <PreLoader /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchSummery watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -188,7 +210,6 @@ function Navbar({ children }) {
   return (
     <nav className="nav-bar">
       <Logo />
-      <Search />
       {children}
     </nav>
   );
@@ -203,23 +224,29 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
+function Search({ searchString, setSearchField }) {
   return (
     <input
       className="search"
       type="text"
       placeholder="Search movies..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
+      value={searchString}
+      onChange={(e) => setSearchField(e.target.value)}
     />
   );
 }
 
 function NumResult({ movies }) {
+  console.log("Num Result is: ", movies);
   return (
     <p className="num-results">
       Found <strong>{movies.length}</strong> results
     </p>
   );
+}
+
+// Loader
+
+function PreLoader() {
+  return <div className="loader">Loading...</div>;
 }
