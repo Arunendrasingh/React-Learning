@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
@@ -57,24 +57,41 @@ export default function App() {
   const [watched, setWatched] = useState(tempWatchedData);
   const [query, setQuery] = useState("");
   const [loader, setLoader] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
+  const [apiError, setApiError] = useState("");
   // TODO: Add error handler to avoid any error type and display fetch error in useEffect.
 
   useEffect(() => {
     async function loadSearchedMovie() {
-      // Here load all searhed movies.
-      setLoader(true);
-      let response = await fetch(`${key_host}s=${query}`);
-      let json_val = await response.json();
-      console.log("Value when no search field is provided: ", json_val);
-      // setting the status of movies with API response.
-      // Apply a condition to set movies only when movies is provided.
-      if (json_val.Search) {
-        setMovies(json_val.Search);
-        console.log("Setting up sarch vlaue", json_val.Response);
+      try {
+        setLoader(true);
+        setIsFailed(false);
+        let response = await fetch(`${key_host}s=${query}`);
+        let json_val = await response.json();
+        console.log("Value when no search field is provided: ", json_val);
+
+        if (json_val.Search) {
+          setMovies(json_val.Search);
+          setApiError("");
+          console.log("Setting up sarch vlaue", json_val.Response);
+        } else {
+          setApiError(json_val.Error);
+        }
+        // Set loader to false and raise error - failed to fetch.
+      } catch (e) {
+        if (e instanceof TypeError && e.message === "Failed to fetch") {
+          console.log("Failed to fetch the detail");
+          setIsFailed(true);
+        }
+      } finally {
+        setLoader(false);
       }
-      setLoader(false);
     }
-    loadSearchedMovie();
+    if (query.length > 2) {
+      loadSearchedMovie();
+    } else {
+      setApiError("😕😕No Movie name present to Search!!");
+    }
   }, [query]);
   return (
     <>
@@ -83,7 +100,15 @@ export default function App() {
         <NumResult movies={movies} />
       </Navbar>
       <Main>
-        <Box>{loader ? <PreLoader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {!loader && !isFailed && apiError.length > 0 ? (
+            <NoMovieDetail message={apiError} />
+          ) : (
+            <MovieList movies={movies} />
+          )}
+          {loader && <PreLoader />}
+          {isFailed && <Error />}
+        </Box>
         <Box>
           <WatchSummery watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -249,4 +274,12 @@ function NumResult({ movies }) {
 
 function PreLoader() {
   return <div className="loader">Loading...</div>;
+}
+
+function Error() {
+  return <div className="error">❌ Faild to Fetch.</div>;
+}
+
+function NoMovieDetail({ message }) {
+  return <div className="loader">{message}</div>;
 }
