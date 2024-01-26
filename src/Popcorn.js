@@ -1,30 +1,6 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
-
-const tempMovieData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt0133093",
-    Title: "The Matrix",
-    Year: "1999",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt6751668",
-    Title: "Parasite",
-    Year: "2019",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
-  },
-];
 
 const tempWatchedData = [
   {
@@ -55,11 +31,19 @@ const average = (arr) =>
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("Inception");
   const [loader, setLoader] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [apiError, setApiError] = useState("");
-  // TODO: Add error handler to avoid any error type and display fetch error in useEffect.
+  const [selectedId, setSelectedId] = useState(null);
+
+  const handleSelectedMovie = (movieId) => {
+    if (selectedId === movieId) {
+      setSelectedId(null);
+    } else {
+      setSelectedId(movieId);
+    }
+  };
 
   useEffect(() => {
     async function loadSearchedMovie() {
@@ -68,25 +52,22 @@ export default function App() {
         setIsFailed(false);
         let response = await fetch(`${key_host}s=${query}`);
         let json_val = await response.json();
-        console.log("Value when no search field is provided: ", json_val);
 
         if (json_val.Search) {
           setMovies(json_val.Search);
           setApiError("");
-          console.log("Setting up sarch vlaue", json_val.Response);
         } else {
           setApiError(json_val.Error);
         }
-        // Set loader to false and raise error - failed to fetch.
       } catch (e) {
         if (e instanceof TypeError && e.message === "Failed to fetch") {
-          console.log("Failed to fetch the detail");
           setIsFailed(true);
         }
       } finally {
         setLoader(false);
       }
     }
+
     if (query.length > 2) {
       loadSearchedMovie();
     } else {
@@ -99,19 +80,30 @@ export default function App() {
         <Search searchString={query} setSearchField={setQuery} />
         <NumResult movies={movies} />
       </Navbar>
+
       <Main>
         <Box>
           {!loader && !isFailed && apiError.length > 0 ? (
             <NoMovieDetail message={apiError} />
           ) : (
-            <MovieList movies={movies} />
+            <MovieList movies={movies} selectMovie={handleSelectedMovie} />
           )}
           {loader && <PreLoader />}
           {isFailed && <Error />}
         </Box>
+
         <Box>
-          <WatchSummery watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedId ? (
+            <MovieDetail
+              selectedMovieId={selectedId}
+              setSelectedId={setSelectedId}
+            />
+          ) : (
+            <>
+              <WatchSummery watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
@@ -198,9 +190,13 @@ function WatchSummery({ watched }) {
   );
 }
 
-function Movie({ movie }) {
+function Movie({ movie, selectMovie }) {
   return (
-    <li key={movie.imdbID}>
+    <li
+      key={movie.imdbID}
+      onClick={() => selectMovie(movie.imdbID)}
+      style={{ cursor: "pointer" }}
+    >
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -213,11 +209,11 @@ function Movie({ movie }) {
   );
 }
 
-function MovieList({ movies }) {
+function MovieList({ movies, selectMovie }) {
   return (
     <ul className="list">
       {movies?.map((movie, index) => (
-        <Movie movie={movie} key={index} />
+        <Movie movie={movie} key={index} selectMovie={selectMovie} />
       ))}
     </ul>
   );
@@ -262,7 +258,6 @@ function Search({ searchString, setSearchField }) {
 }
 
 function NumResult({ movies }) {
-  console.log("Num Result is: ", movies);
   return (
     <p className="num-results">
       Found <strong>{movies.length}</strong> results
@@ -282,4 +277,61 @@ function Error() {
 
 function NoMovieDetail({ message }) {
   return <div className="loader">{message}</div>;
+}
+
+function MovieDetail({ selectedMovieId, setSelectedId }) {
+  const [movieDetail, setMovieDetail] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    setIsLoading(true);
+    console.log("Running useEffect for MovieDetail.", selectedMovieId);
+    // Here load the movie detail and set the state.
+    async function loadMovieDetail() {
+      let res = await fetch(`${key_host}i=${selectedMovieId}`);
+      let json_data = await res.json();
+      console.log("Movie Detail: ", json_data);
+
+      setMovieDetail(json_data);
+      setIsLoading(false);
+    }
+    loadMovieDetail();
+  }, [selectedMovieId]);
+  return (
+    <div className="details">
+      {isLoading ? (
+        <PreLoader />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={() => setSelectedId(null)}>
+              &larr;
+            </button>
+            <img
+              src={`${movieDetail.Poster}`}
+              alt={`Poster of ${movieDetail.Title} movie`}
+            />
+            <div className="details-overview">
+              <h2>{movieDetail.Title}</h2>
+              <p>
+                {movieDetail.Released} &bull; {movieDetail.Runtime}.
+              </p>
+              <p>{movieDetail.Genre}</p>
+              <p>
+                <span>⭐️</span>
+                {movieDetail.imdbRating}/10 IMDb rating
+              </p>
+            </div>
+          </header>
+          <section>
+            <div className="rating">Rating Related Content.</div>
+            <p>
+              <em>{MovieDetail.plot}</em>
+            </p>
+            <p>Starring {movieDetail.Actors}</p>
+            <p>Directed by {movieDetail.Director}</p>
+          </section>
+        </>
+      )}
+    </div>
+  );
 }
