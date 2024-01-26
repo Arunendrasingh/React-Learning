@@ -1,19 +1,17 @@
 import { useState } from "react";
 
-function RatingStar({ stars = 5, size=50, color="yellow", setStarRating }) {
+function RatingStar({ stars = 5, size = 50, color = "yellow", setStarRating }) {
   // Set status for rating
   const [rating, setRating] = useState(0);
   const [tempRting, setTempRating] = useState(null);
 
   const handleRatingClick = (value) => {
-    console.log("Value is: ", value);
-    console.log("Rating is: ", rating);
     if (rating === Number(value)) {
       setRating(rating - 1);
-      setStarRating(rating - 1)
+      setStarRating(rating - 1);
     } else {
       setRating(value);
-      setStarRating(value)
+      setStarRating(value);
     }
   };
 
@@ -21,26 +19,31 @@ function RatingStar({ stars = 5, size=50, color="yellow", setStarRating }) {
     setTempRating(value);
   };
   return (
-    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-      <div style={{ display: "flex", gap: "5px" }}>
-        {Array.from({ length: stars }, (_, index) => (
-          <Star
-            ratingValue={index + 1}
-            handleClick={handleRatingClick}
-            selected={index > rating - 1 ? false : true}
-            tempSeleted={index + 1 > tempRting ? false : true}
-            onHover={handleHoverEffect}
-            size={size}
-            color={color}
-          />
-        ))}
-      </div>
-      <p>{tempRting ?? rating}</p>
+    <div style={{ display: "flex", gap: "5px" }}>
+      {Array.from({ length: stars }, (_, index) => (
+        <Star
+          ratingValue={index + 1}
+          handleClick={handleRatingClick}
+          selected={index > rating - 1 ? false : true}
+          tempSeleted={index + 1 > tempRting ? false : true}
+          onHover={handleHoverEffect}
+          size={size}
+          color={color}
+        />
+      ))}
     </div>
   );
 }
 
-function Star({ ratingValue, handleClick, onHover, selected, tempSeleted, size,color }) {
+function Star({
+  ratingValue,
+  handleClick,
+  onHover,
+  selected,
+  tempSeleted,
+  size,
+  color,
+}) {
   return (
     <span
       role="button"
