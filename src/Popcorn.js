@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import RatingStar from "./RatingStar";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
@@ -13,16 +14,6 @@ const tempWatchedData = [
     imdbRating: 8.8,
     userRating: 10,
   },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
 ];
 
 const average = (arr) =>
@@ -30,7 +21,7 @@ const average = (arr) =>
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [watched, setWatched] = useState([]);
   const [query, setQuery] = useState("Inception");
   const [loader, setLoader] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
@@ -43,6 +34,10 @@ export default function App() {
     } else {
       setSelectedId(movieId);
     }
+  };
+
+  const updateWathedList = (newMovieDetail) => {
+    setWatched([...watched, newMovieDetail]);
   };
 
   useEffect(() => {
@@ -97,6 +92,8 @@ export default function App() {
             <MovieDetail
               selectedMovieId={selectedId}
               setSelectedId={setSelectedId}
+              updateWathedList={updateWathedList}
+              watched={watched}
             />
           ) : (
             <>
@@ -279,9 +276,24 @@ function NoMovieDetail({ message }) {
   return <div className="loader">{message}</div>;
 }
 
-function MovieDetail({ selectedMovieId, setSelectedId }) {
+function MovieDetail({
+  selectedMovieId,
+  setSelectedId,
+  updateWathedList,
+  watched,
+}) {
   const [movieDetail, setMovieDetail] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [movieRating, setMovieRating] = useState(0);
+
+  // Get movie is already in watched list or not if yesthen display the movie
+  const isWatched = watched
+    .map((detail) => detail.imdbID)
+    .includes(selectedMovieId);
+  const watchedRating = watched.find(
+    (item) => item.imdbID === selectedMovieId
+  )?.userRating;
+
   useEffect(() => {
     setIsLoading(true);
     console.log("Running useEffect for MovieDetail.", selectedMovieId);
@@ -323,7 +335,30 @@ function MovieDetail({ selectedMovieId, setSelectedId }) {
             </div>
           </header>
           <section>
-            <div className="rating">Rating Related Content.</div>
+            <div className="rating">
+              {!isWatched?
+              <>
+              <RatingStar size={35} setStarRating={setMovieRating} />
+              <button
+                className="btn-add"
+                onClick={() =>
+                  updateWathedList({
+                    imdbID: movieDetail.imdbID,
+                    Title: movieDetail.Title,
+                    Year: movieDetail.Year,
+                    Poster: movieDetail.Poster,
+                    runtime: movieDetail.Runtime,
+                    imdbRating: movieDetail.imdbRating,
+                    userRating: movieRating,
+                  })
+                }
+              >
+                + Add to watched list
+              </button></>
+              :<p>
+              You rated with movie {watchedRating} <span>⭐️</span>
+            </p>}
+            </div>
             <p>
               <em>{MovieDetail.plot}</em>
             </p>
