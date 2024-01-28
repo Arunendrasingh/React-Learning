@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import RatingStar from "../star/RatingStar";
-import { useMovies } from "./useMovies";
+import { useMovies } from "./customHooks/useMovies";
+import { useLocalStorage } from "./customHooks/useLocalStorage";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
@@ -10,12 +11,9 @@ const average = (arr) =>
 export default function App() {
   const [query, setQuery] = useState("Inception");
   const [selectedId, setSelectedId] = useState(null);
+  const [watched, setWatched] = useLocalStorage([]);
+  const { movies, loader, isFailed, apiError } = useMovies(query);
 
-  const [watched, setWatched] = useState(() => {
-    // get the watched key and convert the string into list to represent.
-    const storage = localStorage.getItem("watched");
-    return JSON.parse(storage);
-  });
   const handleSelectedMovie = (movieId) => {
     if (selectedId === movieId) {
       setSelectedId(null);
@@ -31,13 +29,6 @@ export default function App() {
   const deleteWatchedMovie = (movieId) => {
     setWatched(watched.filter((movie) => movieId !== movie.imdbID));
   };
-
-  // Saving the watched status in local storage.
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
-
-  const { movies, loader, isFailed, apiError } = useMovies(query);
 
   return (
     <>
