@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RatingStar from "./RatingStar";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
@@ -34,7 +34,7 @@ export default function App() {
   const deleteWatchedMovie = (movieId) => {
     setWatched(watched.filter((movie) => movieId !== movie.imdbID));
   };
- 
+
   // Saving the watched status in local storage.
   useEffect(() => {
     localStorage.setItem("watched", JSON.stringify(watched));
@@ -272,6 +272,26 @@ function Logo() {
 }
 
 function Search({ searchString, setSearchField }) {
+  // Select dom using reg and useEffect
+  const inputEl = useRef(null);
+
+  // useEffect to focus on search-bar
+  useEffect(() => {
+    function focusOnInput(e) {
+      // Now if searchBar is already active then remove the existing value and set to empty.
+      if (document.activeElement === inputEl.current && e.code === "Enter") {
+        setSearchField("");
+        return;
+      }
+      // This method do required work.
+      if (e.code === "Enter") {
+        inputEl.current.focus();
+      }
+    }
+
+    // EventListner for keydown in keyboard
+    document.addEventListener("keydown", focusOnInput);
+  }, []);
   return (
     <input
       className="search"
@@ -279,6 +299,7 @@ function Search({ searchString, setSearchField }) {
       placeholder="Search movies..."
       value={searchString}
       onChange={(e) => setSearchField(e.target.value)}
+      ref={inputEl}
     />
   );
 }
