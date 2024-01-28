@@ -3,19 +3,6 @@ import RatingStar from "./RatingStar";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-];
-
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
@@ -41,11 +28,14 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Create a controller
+    const controller = new AbortController();
+    const signal = controller.signal;
     async function loadSearchedMovie() {
       try {
         setLoader(true);
         setIsFailed(false);
-        let response = await fetch(`${key_host}s=${query}`);
+        let response = await fetch(`${key_host}s=${query}`, { signal });
         let json_val = await response.json();
 
         if (json_val.Search) {
@@ -67,6 +57,11 @@ export default function App() {
       loadSearchedMovie();
     } else {
       setApiError("😕😕No Movie name present to Search!!");
+    }
+    return () => {
+      controller.abort()
+      console.log("Aborting the connection.....")
+
     }
   }, [query]);
   return (
@@ -336,28 +331,31 @@ function MovieDetail({
           </header>
           <section>
             <div className="rating">
-              {!isWatched?
-              <>
-              <RatingStar size={35} setStarRating={setMovieRating} />
-              <button
-                className="btn-add"
-                onClick={() =>
-                  updateWathedList({
-                    imdbID: movieDetail.imdbID,
-                    Title: movieDetail.Title,
-                    Year: movieDetail.Year,
-                    Poster: movieDetail.Poster,
-                    runtime: movieDetail.Runtime,
-                    imdbRating: movieDetail.imdbRating,
-                    userRating: movieRating,
-                  })
-                }
-              >
-                + Add to watched list
-              </button></>
-              :<p>
-              You rated with movie {watchedRating} <span>⭐️</span>
-            </p>}
+              {!isWatched ? (
+                <>
+                  <RatingStar size={35} setStarRating={setMovieRating} />
+                  <button
+                    className="btn-add"
+                    onClick={() =>
+                      updateWathedList({
+                        imdbID: movieDetail.imdbID,
+                        Title: movieDetail.Title,
+                        Year: movieDetail.Year,
+                        Poster: movieDetail.Poster,
+                        runtime: movieDetail.Runtime,
+                        imdbRating: movieDetail.imdbRating,
+                        userRating: movieRating,
+                      })
+                    }
+                  >
+                    + Add to watched list
+                  </button>
+                </>
+              ) : (
+                <p>
+                  You rated with movie {watchedRating} <span>⭐️</span>
+                </p>
+              )}
             </div>
             <p>
               <em>{MovieDetail.plot}</em>
