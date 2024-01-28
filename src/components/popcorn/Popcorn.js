@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import RatingStar from "./RatingStar";
+import RatingStar from "../star/RatingStar"
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
