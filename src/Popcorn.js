@@ -31,6 +31,15 @@ export default function App() {
     setWatched([...watched, newMovieDetail]);
   };
 
+  const deleteWatchedMovie = (movieId) => {
+    setWatched(watched.filter((movie) => movieId !== movie.imdbID));
+  };
+ 
+  // Saving the watched status in local storage.
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
+
   useEffect(() => {
     // Create a controller
     const controller = new AbortController();
@@ -96,7 +105,10 @@ export default function App() {
           ) : (
             <>
               <WatchSummery watched={watched} />
-              <WatchedMovieList watched={watched} />
+              <WatchedMovieList
+                watched={watched}
+                deleteWatchedMovie={deleteWatchedMovie}
+              />
             </>
           )}
         </Box>
@@ -123,17 +135,21 @@ function Box({ children }) {
   );
 }
 
-function WatchedMovieList({ watched }) {
+function WatchedMovieList({ watched, deleteWatchedMovie }) {
   return (
     <ul className="list">
       {watched.map((movie, index) => (
-        <WatchedMovie movie={movie} key={index} />
+        <WatchedMovie
+          movie={movie}
+          key={index}
+          deleteWatchedMovie={deleteWatchedMovie}
+        />
       ))}
     </ul>
   );
 }
 
-function WatchedMovie({ movie }) {
+function WatchedMovie({ movie, deleteWatchedMovie }) {
   return (
     <li key={movie.imdbID}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
@@ -150,6 +166,21 @@ function WatchedMovie({ movie }) {
         <p>
           <span>⏳</span>
           <span>{movie.runtime} min</span>
+        </p>
+        <p>
+          <span onClick={() => deleteWatchedMovie(movie.imdbID)}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              x="0px"
+              y="0px"
+              width="25"
+              height="25"
+              viewBox="0 0 30 30"
+              style={{ fill: "#FA5252" }}
+            >
+              <path d="M 13 3 A 1.0001 1.0001 0 0 0 11.986328 4 L 6 4 A 1.0001 1.0001 0 1 0 6 6 L 24 6 A 1.0001 1.0001 0 1 0 24 4 L 18.013672 4 A 1.0001 1.0001 0 0 0 17 3 L 13 3 z M 6 8 L 6 24 C 6 25.105 6.895 26 8 26 L 22 26 C 23.105 26 24 25.105 24 24 L 24 8 L 6 8 z"></path>
+            </svg>
+          </span>
         </p>
       </div>
     </li>
@@ -291,11 +322,6 @@ function MovieDetail({
   const watchedRating = watched.find(
     (item) => item.imdbID === selectedMovieId
   )?.userRating;
-
-  // Saving the watched status in local storage.
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
 
   useEffect(() => {
     setIsLoading(true);
