@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import RatingStar from "../star/RatingStar";
 import { useMovies } from "./customHooks/useMovies";
 import { useLocalStorage } from "./customHooks/useLocalStorage";
+import { useEventListner } from "./customHooks/useEventListner";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
@@ -228,24 +229,14 @@ function Logo() {
 function Search({ searchString, setSearchField }) {
   // Select dom using reg and useEffect
   const inputEl = useRef(null);
-
-  // useEffect to focus on search-bar
-  useEffect(() => {
-    function focusOnInput(e) {
-      // Now if searchBar is already active then remove the existing value and set to empty.
-      if (document.activeElement === inputEl.current && e.code === "Enter") {
-        setSearchField("");
-        return;
-      }
-      // This method do required work.
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-      }
+  useEventListner("Enter", () => {
+    if (document.activeElement === inputEl.current) {
+      return;
     }
+    inputEl.current.focus();
+    setSearchField("");
+  });
 
-    // EventListner for keydown in keyboard
-    document.addEventListener("keydown", focusOnInput);
-  }, []);
   return (
     <input
       className="search"
