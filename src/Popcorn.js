@@ -8,13 +8,17 @@ const average = (arr) =>
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [query, setQuery] = useState("Inception");
   const [loader, setLoader] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [apiError, setApiError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
+  const [watched, setWatched] = useState(() => {
+    // get the watched key and convert the string into list to represent.
+    const storage = localStorage.getItem("watched");
+    return JSON.parse(storage);
+  });
   const handleSelectedMovie = (movieId) => {
     if (selectedId === movieId) {
       setSelectedId(null);
@@ -59,10 +63,9 @@ export default function App() {
       setApiError("😕😕No Movie name present to Search!!");
     }
     return () => {
-      controller.abort()
-      console.log("Aborting the connection.....")
-
-    }
+      controller.abort();
+      console.log("Aborting the connection.....");
+    };
   }, [query]);
   return (
     <>
@@ -289,6 +292,11 @@ function MovieDetail({
     (item) => item.imdbID === selectedMovieId
   )?.userRating;
 
+  // Saving the watched status in local storage.
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
+
   useEffect(() => {
     setIsLoading(true);
     console.log("Running useEffect for MovieDetail.", selectedMovieId);
@@ -303,6 +311,7 @@ function MovieDetail({
     }
     loadMovieDetail();
   }, [selectedMovieId]);
+
   return (
     <div className="details">
       {isLoading ? (
