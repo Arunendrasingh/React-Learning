@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import RatingStar from "../star/RatingStar"
+import RatingStar from "../star/RatingStar";
+import { useMovies } from "./useMovies";
 
 let key_host = "https://www.omdbapi.com/?apikey=d00b9106&";
 
@@ -7,11 +8,7 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState("Inception");
-  const [loader, setLoader] = useState(false);
-  const [isFailed, setIsFailed] = useState(false);
-  const [apiError, setApiError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
   const [watched, setWatched] = useState(() => {
@@ -40,42 +37,8 @@ export default function App() {
     localStorage.setItem("watched", JSON.stringify(watched));
   }, [watched]);
 
-  useEffect(() => {
-    // Create a controller
-    const controller = new AbortController();
-    const signal = controller.signal;
-    async function loadSearchedMovie() {
-      try {
-        setLoader(true);
-        setIsFailed(false);
-        let response = await fetch(`${key_host}s=${query}`, { signal });
-        let json_val = await response.json();
+  const { movies, loader, isFailed, apiError } = useMovies(query);
 
-        if (json_val.Search) {
-          setMovies(json_val.Search);
-          setApiError("");
-        } else {
-          setApiError(json_val.Error);
-        }
-      } catch (e) {
-        if (e instanceof TypeError && e.message === "Failed to fetch") {
-          setIsFailed(true);
-        }
-      } finally {
-        setLoader(false);
-      }
-    }
-
-    if (query.length > 2) {
-      loadSearchedMovie();
-    } else {
-      setApiError("😕😕No Movie name present to Search!!");
-    }
-    return () => {
-      controller.abort();
-      console.log("Aborting the connection.....");
-    };
-  }, [query]);
   return (
     <>
       <Navbar>
