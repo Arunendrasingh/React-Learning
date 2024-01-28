@@ -29,6 +29,7 @@ function RatingStar({ stars = 5, size = 50, color = "yellow", setStarRating }) {
           onHover={handleHoverEffect}
           size={size}
           color={color}
+          key={index}
         />
       ))}
     </div>
